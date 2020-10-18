@@ -137,6 +137,7 @@ def train_eval(
     reward_scale_factor=1.0,
     gradient_clipping=None,
     use_tf_functions=True,
+    drivers_in_graph=True,
     # Params for eval
     num_eval_episodes=10,
     eval_env_interval=5000,  # number of env steps
@@ -491,6 +492,9 @@ def train_eval(
         global_step=g_step)
     next_frame_decoder_ckpt.initialize_or_restore()
 
+  if use_tf_functions and not drivers_in_graph:
+    collect_policy.action = common.function(collect_policy.action)
+
   initial_collect_driver = dynamic_step_driver.DynamicStepDriver(
       tf_env,
       initial_collect_policy,
@@ -502,7 +506,7 @@ def train_eval(
       observers=replay_observer + train_metrics,
       num_steps=collect_steps_per_iteration)
 
-  if use_tf_functions:
+  if use_tf_functions and drivers_in_graph:
     initial_collect_driver.run = common.function(initial_collect_driver.run)
     collect_driver.run = common.function(collect_driver.run)
 
@@ -670,6 +674,7 @@ def train_eval(
           train_step=env_steps.result(),
           summary_writer=summary_writer,
           summary_prefix='Eval',
+          use_function=drivers_in_graph,
       )
       if eval_metrics_callback is not None:
         eval_metrics_callback(results, env_steps.result())

@@ -61,12 +61,12 @@ train_pisac.train_eval.critic_obs_fc_layers=None
 train_pisac.train_eval.critic_action_fc_layers=None
 train_pisac.train_eval.critic_joint_fc_layers=(256, 256)
 train_pisac.train_eval.actor_kernel_init='glorot_uniform'
-train_pisac.train_eval.normal_proj_net=@sac_agent.sac_normal_projection_net
+train_pisac.train_eval.normal_proj_net=@pisac.sac_agent.sac_normal_projection_net
 train_pisac.train_eval.critic_kernel_init='glorot_uniform'
 train_pisac.train_eval.critic_last_kernel_init='glorot_uniform'
-sac_agent.SacAgent.critic_loss_weight=0.5
-sac_agent.SacAgent.initial_log_alpha=0.0
-sac_agent.SacAgent.heuristic_target_entropy_type='-dim(A)/2'
+pisac.sac_agent.SacAgent.critic_loss_weight=0.5
+pisac.sac_agent.SacAgent.initial_log_alpha=0.0
+pisac.sac_agent.SacAgent.heuristic_target_entropy_type='-dim(A)/2'
 
 # Params for train
 train_pisac.train_eval.batch_size=256

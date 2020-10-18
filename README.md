@@ -54,7 +54,8 @@ Find out more:
 To train the model(s) in the paper with periodic evaluation, run this command:
 
 ```train PI-SAC
-python run.py --gin_file=config/pisac.gin \
+python -m pisac.run --root_dir=/tmp/pisac_cartpole_swingup \
+--gin_file=pisac/config/pisac.gin \
 --gin_bindings=train_pisac.train_eval.domain_name=\'cartpole\' \
 --gin_bindings=train_pisac.train_eval.task_name=\'swingup\' \
 --gin_bindings=train_pisac.train_eval.action_repeat=4 \
@@ -90,7 +91,7 @@ To use multiple gradient steps per environment step, change `train_pisac.train_e
 
 ## Requirements
 
-The PI-SAC code uses these packages:
+The PI-SAC code uses Python 3 and these packages:
 
 -   tensorflow-gpu==2.3.0
 -   tf_agents==0.6.0
@@ -105,7 +106,8 @@ The PI-SAC code uses these packages:
 -   pstar
 -   qj
 
+If you ever see that dm_control complains about some threading issues, please try adding `--gin_bindings=train_pisac.train_eval.drivers_in_graph=False` to put dm_control environment outside of the TensorFlow graph.
+
 [rendering]: https://github.com/deepmind/dm_control#rendering
 
 Disclaimer: This is not an official Google product.
-
