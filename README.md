@@ -1,6 +1,8 @@
 # Predictive Information Accelerates Learning in RL
 
-[Kuang-Huei Lee][leekh], [Ian Fischer][iansf], [Anthony Liu][aliu], [Yijie Guo][yguo], [Honglak Lee][honglak], [John Canny][canny], [Sergio Guadarrama][sguada]
+[Kuang-Huei Lee][leekh], [Ian Fischer][iansf], [Anthony Liu][aliu],
+[Yijie Guo][yguo], [Honglak Lee][honglak], [John Canny][canny],
+[Sergio Guadarrama][sguada]
 
 NeurIPS 2020
 
@@ -10,9 +12,14 @@ NeurIPS 2020
 ![cartpole_video](https://user-images.githubusercontent.com/4847452/95011256-413aff80-05e4-11eb-964a-37a333412245.gif)
 ![finger_video](https://user-images.githubusercontent.com/4847452/95011270-4d26c180-05e4-11eb-9524-0db5dbc7c7ce.gif)
 
-This repository hosts the open source implementation of PI-SAC, the reinforcement learning agent introduced in [Predictive Information Accelerates Learning in RL][paper].
-PI-SAC combines the Soft Actor-Critic Agent with an additional objective that learns compressive representations of predictive information.
-PI-SAC agents can substantially improve sample efficiency and returns over challenging baselines on tasks from the [DeepMind Control Suite][dmc_paper] of vision-based continuous control environments, where observations are pixels.
+This repository hosts the open source implementation of PI-SAC, the
+reinforcement learning agent introduced in
+[Predictive Information Accelerates Learning in RL][paper]. PI-SAC combines the
+Soft Actor-Critic Agent with an additional objective that learns compressive
+representations of predictive information. PI-SAC agents can substantially
+improve sample efficiency and returns over challenging baselines on tasks from
+the [DeepMind Control Suite][dmc_paper] of vision-based continuous control
+environments, where observations are pixels.
 
 [paper]: https://arxiv.org/abs/2007.12401
 [pdf_paper]: https://arxiv.org/pdf/2007.12401.pdf
@@ -25,7 +32,8 @@ PI-SAC agents can substantially improve sample efficiency and returns over chall
 [sguada]: https://scholar.google.com/citations?user=gYiCq88AAAAJ
 [dmc_paper]: https://arxiv.org/abs/1801.00690
 
-If you find this useful for your research, please use the following to reference:
+If you find this useful for your research, please use the following to
+reference:
 
 ```
 @article{lee2020predictive,
@@ -40,20 +48,24 @@ If you find this useful for your research, please use the following to reference
 
 ![pi2small](https://user-images.githubusercontent.com/4847452/95029558-e7771b80-065d-11eb-8f8b-7c2ecffc1222.png)
 
-PI-SAC learns compact representations of the predictive information I(X_past;Y_future) that captures the environment transition dynamics, in addition to actor and critic learning.
-We capture the predictive information in a representation Z by maximizing I(Y_future;Z) and minimizing I(X_past;Z|Y_future) to compress out the non-predicitve part for better generalization, which reflects in better sampled efficiency, returns, and transferability.
-When interacting with the environment, it simply executes the actor model.
+PI-SAC learns compact representations of the predictive information
+I(X_past;Y_future) that captures the environment transition dynamics, in
+addition to actor and critic learning. We capture the predictive information in
+a representation Z by maximizing I(Y_future;Z) and minimizing
+I(X_past;Z|Y_future) to compress out the non-predicitve part for better
+generalization, which reflects in better sampled efficiency, returns, and
+transferability. When interacting with the environment, it simply executes the
+actor model.
 
 Find out more:
 
-- [PDF paper][pdf_paper]
-
+-   [PDF paper][pdf_paper]
 
 ## Training and Evaluation
 
 To train the model(s) in the paper with periodic evaluation, run this command:
 
-```train PI-SAC
+```train
 python -m pisac.run --root_dir=/tmp/pisac_cartpole_swingup \
 --gin_file=pisac/config/pisac.gin \
 --gin_bindings=train_pisac.train_eval.domain_name=\'cartpole\' \
@@ -63,23 +75,25 @@ python -m pisac.run --root_dir=/tmp/pisac_cartpole_swingup \
 --gin_bindings=train_pisac.train_eval.initial_feature_step=5000
 ```
 
-We use `gin` to config hyperparameters.
-The default configs are specificed in `pisac/config/pisac.gin`.
-To reproduce the main DM-Control experiments, you need to specify different `domain_name`, `task_name`, `action_repeat`, `initial_collect_steps`, `initial_feature_step` for each environment.
+We use `gin` to config hyperparameters. The default configs are specificed in
+`pisac/config/pisac.gin`. To reproduce the main DM-Control experiments, you need
+to specify different `domain_name`, `task_name`, `action_repeat`,
+`initial_collect_steps`, `initial_feature_step` for each environment.
 
-| `domain_name` | `task_name` | `action_repeat` | `initial_collect_steps` | `initial_feature_step` |
-| :------- | :------- | :------- | :------- | :------- |
-| cartpole | swingup | 4 | 1000 | 5000 |
-| cartpole | balance_sparse | 2 | 1000 | 5000 |
-| reacher | easy | 4 | 1000 | 5000 |
-| ball_in_cup | catch | 4 | 1000 | 5000 |
-| finger | spin | 1 | 10000 | 0 |
-| cheetah | run | 4 | 10000 | 10000 |
-| walker | walk | 2 | 10000 | 10000 |
-| walker | stand | 2 | 10000 | 10000 |
-| hopper | stand | 2 | 10000 | 10000 |
+`domain_name` | `task_name`    | `action_repeat` | `initial_collect_steps` | `initial_feature_step`
+:------------ | :------------- | :-------------- | :---------------------- | :---------------------
+cartpole      | swingup        | 4               | 1000                    | 5000
+cartpole      | balance_sparse | 2               | 1000                    | 5000
+reacher       | easy           | 4               | 1000                    | 5000
+ball_in_cup   | catch          | 4               | 1000                    | 5000
+finger        | spin           | 1               | 10000                   | 0
+cheetah       | run            | 4               | 10000                   | 10000
+walker        | walk           | 2               | 10000                   | 10000
+walker        | stand          | 2               | 10000                   | 10000
+hopper        | stand          | 2               | 10000                   | 10000
 
-To use multiple gradient steps per environment step, change `train_pisac.train_eval.collect_every` to a number larger than 1.
+To use multiple gradient steps per environment step, change
+`train_pisac.train_eval.collect_every` to a number larger than 1.
 
 ## Results
 
@@ -106,7 +120,9 @@ The PI-SAC code uses Python 3 and these packages:
 -   pstar
 -   qj
 
-If you ever see that dm_control complains about some threading issues, please try adding `--gin_bindings=train_pisac.train_eval.drivers_in_graph=False` to put dm_control environment outside of the TensorFlow graph.
+If you ever see that dm_control complains about some threading issues, please
+try adding `--gin_bindings=train_pisac.train_eval.drivers_in_graph=False` to put
+dm_control environment outside of the TensorFlow graph.
 
 [rendering]: https://github.com/deepmind/dm_control#rendering
 
