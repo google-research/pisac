@@ -64,7 +64,7 @@ python -m pisac.run --root_dir=/tmp/pisac_cartpole_swingup \
 ```
 
 We use `gin` to config hyperparameters.
-The default configs are specificed in `config/pisac.gin`.
+The default configs are specificed in `pisac/config/pisac.gin`.
 To reproduce the main DM-Control experiments, you need to specify different `domain_name`, `task_name`, `action_repeat`, `initial_collect_steps`, `initial_feature_step` for each environment.
 
 | `domain_name` | `task_name` | `action_repeat` | `initial_collect_steps` | `initial_feature_step` |
