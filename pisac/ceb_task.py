@@ -58,7 +58,8 @@ class CEB(tf.Module):
       beta_fn: A beta value schedule function.
       loss_weight: CEB loss weight.
       forward_smoothing_weight: forward smoothing weight.
-      smooth_mode: 'b' for using b(z|y1), 'bc' for using b(z|y1) and c(y1|z)
+      smooth_mode: 'b' for using b(z|y1), 'bc' for using b(z|y1) and c(y1|z),
+        None for not doing smoothing.
       generative_ratio: Float between 0 and 1. If 0, only use the catgen loss.
         If 1, only use the predictive loss. Otherwise, mix between the two.
       generative_items: Number of items to predict with generative decoders.
@@ -138,14 +139,20 @@ class CEB(tf.Module):
     dist.log_prob = log_prob
     return dist
 
-  def loss(self, zx0, e_zx_0, b_zy_0, b_zy_1, y_preds0=None, y_targets0=None):
+  def loss(self,
+           zx0,
+           e_zx_0,
+           b_zy_0,
+           b_zy_1=None,
+           y_preds0=None,
+           y_targets0=None):
     """CEB loss.
 
     Args:
       zx0: representation vector sampled from e_zx_0 with shape [B T Z].
       e_zx_0: e(z|x) with shape [B T (Z)].
       b_zy_0: b(z|y) with shape [B T (Z)].
-      b_zy_1: b(z|y_{t+1}) with shape [B T (Z)].
+      b_zy_1: Optional b(z|y_{t+1}) with shape [B T (Z)] for smoothing.
       y_preds0: Optional predicted y for generative objectives.
       y_targets0: Optional target y for generative objectives.
 
@@ -177,10 +184,11 @@ class CEB(tf.Module):
       phi = self.generative_ratio
       loss = self.loss_w * (beta*i_xz_y_0 + phi*log_cyz0 - (1.0-phi)*i_yz_0)
 
-    log_bzy_1 = b_zy_1.log_prob(zx0)
-    i_xz_y_1 = log_ezx_0 - log_bzy_1
+    if self.smooth_mode in ['b', 'bc']:
+      log_bzy_1 = b_zy_1.log_prob(zx0)
+      i_xz_y_1 = log_ezx_0 - log_bzy_1
+      loss += self.fw_smooth_w * beta * i_xz_y_1
 
-    loss += self.fw_smooth_w * beta * i_xz_y_1
     if self.smooth_mode == 'bc':
       c_yz_1 = self.decoder_catgen_dist(b_zy_1, zx0)
       i_yz_1 = c_yz_1.log_prob()
@@ -196,8 +204,9 @@ class CEB(tf.Module):
                         step=self.step_counter)
       tf.summary.scalar(name='Ixz_y', data=tf.reduce_mean(i_xz_y_0),
                         step=self.step_counter)
-      tf.summary.scalar(name='Ixz_y_1', data=tf.reduce_mean(i_xz_y_1),
-                        step=self.step_counter)
+      if self.smooth_mode in ['b', 'bc']:
+        tf.summary.scalar(name='Ixz_y_1', data=tf.reduce_mean(i_xz_y_1),
+                          step=self.step_counter)
       if self.smooth_mode == 'bc':
         tf.summary.scalar(name='Iyz_1', data=tf.reduce_mean(i_yz_1),
                           step=self.step_counter)
@@ -293,15 +302,18 @@ class CEBTask(tf.Module):
       b_zy0_loc, b_zy0_scale = b_zy0_param
       b_zy0 = tfd.MultivariateNormalDiag(loc=b_zy0_loc, scale_diag=b_zy0_scale)
 
-      feat_y1, _ = self.backward_enc(y1, training=self.learn_backward_enc)
-      if not self.learn_backward_enc:
-        feat_y1 = tf.stop_gradient(feat_y1)
-      if self.backward_encode_rewards:
-        b_zy1_param, _ = self.backward_head([feat_y1, r1], training=True)
-      else:
-        b_zy1_param, _ = self.backward_head(feat_y1, training=True)
-      b_zy1_loc, b_zy1_scale = b_zy1_param
-      b_zy1 = tfd.MultivariateNormalDiag(loc=b_zy1_loc, scale_diag=b_zy1_scale)
+      b_zy1 = None
+      if self.ceb.smooth_mode is not None:
+        feat_y1, _ = self.backward_enc(y1, training=self.learn_backward_enc)
+        if not self.learn_backward_enc:
+          feat_y1 = tf.stop_gradient(feat_y1)
+        if self.backward_encode_rewards:
+          b_zy1_param, _ = self.backward_head([feat_y1, r1], training=True)
+        else:
+          b_zy1_param, _ = self.backward_head(feat_y1, training=True)
+        b_zy1_loc, b_zy1_scale = b_zy1_param
+        b_zy1 = tfd.MultivariateNormalDiag(loc=b_zy1_loc,
+                                           scale_diag=b_zy1_scale)
 
       if self.y_decoders is None:  # pure contrastive CEB
         loss = self.ceb.loss(zx0, e_zx0, b_zy0, b_zy1)
