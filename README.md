@@ -1,4 +1,4 @@
-# Predictive Information Accelerates Learning in RL
+# PI-SAC: Predictive Information Accelerates Learning in RL
 
 [Kuang-Huei Lee][leekh], [Ian Fischer][iansf], [Anthony Liu][aliu],
 [Yijie Guo][yguo], [Honglak Lee][honglak], [John Canny][canny],
