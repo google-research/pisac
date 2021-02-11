@@ -76,6 +76,8 @@ class CEB(tf.Module):
       step_counter: training step counter.
       name: A string representing name of the module.
     """
+    tf.Module.__init__(self, name=name)
+
     self.beta_fn = beta_fn
     self.loss_w = loss_weight
     self.fw_smooth_w = forward_smoothing_weight
@@ -264,6 +266,8 @@ class CEBTask(tf.Module):
       global_step: Training step counter.
       name: A string representing name of the task module.
     """
+    tf.Module.__init__(self, name=name)
+
     self.forward_enc = forward_enc
     self.forward_head = forward_head
     self.backward_enc = backward_enc
