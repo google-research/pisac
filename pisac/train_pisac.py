@@ -701,7 +701,7 @@ def train_eval(
   if use_tf_functions:
     if learn_ceb:
       m_ceb.train = common.function(
-          m_ceb.train, experimental_relax_shapes=False)
+          m_ceb.train, reduce_retracing=False)
       model_train_step = common.function(model_train_step)
     agent_train_step = common.function(agent_train_step)
     tf_agent.train_pix = common.function(tf_agent.train_pix)
