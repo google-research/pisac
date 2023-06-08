@@ -240,12 +240,12 @@ class SacAgent(tf_agent.TFAgent):
     flat_action_spec = tf.nest.flatten(action_spec)
     if heuristic_target_entropy_type == '-dim(A)/2':
       target_entropy = -np.sum([
-          np.product(single_spec.shape.as_list())
+          np.prod(single_spec.shape.as_list())
           for single_spec in flat_action_spec
       ]) / 2.0
     elif heuristic_target_entropy_type == '-dim(A)':
       target_entropy = -np.sum([
-          np.product(single_spec.shape.as_list())
+          np.prod(single_spec.shape.as_list())
           for single_spec in flat_action_spec
       ])
     else:
